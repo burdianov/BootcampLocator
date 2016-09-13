@@ -1,6 +1,9 @@
 package com.testography.bootcamplocator.model;
 
 public class Devslopes {
+
+    final String DRAWABLE = "drawable/";
+
     private float longitude;
     private float latitude;
     private String locationTitle;
@@ -14,6 +17,10 @@ public class Devslopes {
         this.locationTitle = locationTitle;
         this.locationAddress = locationAddress;
         this.locationImgUrl = locationImgUrl;
+    }
+
+    public String getImageUrl() {
+        return DRAWABLE + locationImgUrl;
     }
 
     public float getLongitude() {

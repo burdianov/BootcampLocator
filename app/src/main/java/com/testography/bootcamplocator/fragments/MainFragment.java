@@ -34,6 +34,7 @@ public class MainFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private MarkerOptions mUserMarker;
+    private LocationsListFragment mListFragment;
 
     public MainFragment() {
         // Required empty public constructor
@@ -59,6 +60,16 @@ public class MainFragment extends Fragment implements OnMapReadyCallback {
                 getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        mListFragment = (LocationsListFragment) getActivity()
+                .getSupportFragmentManager().findFragmentById(R.id.container_locations_list);
+        if (mListFragment == null) {
+            mListFragment = LocationsListFragment.newInstance();
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.container_locations_list, mListFragment)
+                    .commit();
+        }
+
         final EditText zipText = (EditText) view.findViewById(R.id.zip_text);
         zipText.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -74,13 +85,15 @@ public class MainFragment extends Fragment implements OnMapReadyCallback {
                             .getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(zipText.getWindowToken(), 0);
 
+                    showList();
+
                     updateMapForZip(zip);
                     return true;
                 }
                 return false;
             }
         });
-
+        hideList();
         return view;
     }
 
@@ -139,5 +152,19 @@ public class MainFragment extends Fragment implements OnMapReadyCallback {
             marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin));
             mMap.addMarker(marker);
         }
+    }
+
+    private void hideList() {
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .hide(mListFragment)
+                .commit();
+    }
+
+    private void showList() {
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .show(mListFragment)
+                .commit();
     }
 }
