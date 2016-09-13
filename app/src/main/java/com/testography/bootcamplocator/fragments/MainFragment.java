@@ -3,6 +3,7 @@ package com.testography.bootcamplocator.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,13 +12,19 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.testography.bootcamplocator.R;
+import com.testography.bootcamplocator.model.Devslopes;
+import com.testography.bootcamplocator.services.DataService;
+
+import java.util.ArrayList;
 
 public class MainFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private MarkerOptions mUserMarker;
 
     public MainFragment() {
         // Required empty public constructor
@@ -62,9 +69,35 @@ public class MainFragment extends Fragment implements OnMapReadyCallback {
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+//        LatLng sydney = new LatLng(-34, 151);
+//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
+    public void setUserMarker(LatLng latLng) {
+        if (mUserMarker == null) {
+            mUserMarker = new MarkerOptions().position(latLng).title("Current " +
+                    "Location");
+            mMap.addMarker(mUserMarker);
+            Log.v("---MAPS---", "Lat: " + latLng.latitude + " - Long: " +
+                    latLng.longitude);
+        }
+        updateMapForZip(92284);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+    }
+
+    private void updateMapForZip(int zipcode) {
+        ArrayList<Devslopes> locations = DataService.getInstance()
+                .getBootcampLocationsWithin10MilesOfZip(zipcode);
+
+        for (int i = 0; i < locations.size(); i++) {
+            Devslopes loc = locations.get(i);
+            MarkerOptions marker = new MarkerOptions().position(new LatLng(loc
+                    .getLatitude(), loc.getLongitude()));
+            marker.title(loc.getLocationTitle());
+            marker.snippet(loc.getLocationAddress());
+            marker.icon(BitmapDescriptorFactory.fromResource(R.drawable.pin));
+            mMap.addMarker(marker);
+        }
+    }
 }
