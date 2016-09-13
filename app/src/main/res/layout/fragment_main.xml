@@ -30,6 +30,7 @@
                     android:layout_height="35dp"/>
 
                 <EditText
+                    android:id="@+id/zip_text"
                     android:layout_weight="8"
                     android:hint="@string/zip_hint"
                     android:inputType="number"

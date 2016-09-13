@@ -1,12 +1,18 @@
 package com.testography.bootcamplocator.fragments;
 
 
+import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,7 +25,10 @@ import com.testography.bootcamplocator.R;
 import com.testography.bootcamplocator.model.Devslopes;
 import com.testography.bootcamplocator.services.DataService;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class MainFragment extends Fragment implements OnMapReadyCallback {
 
@@ -50,7 +59,28 @@ public class MainFragment extends Fragment implements OnMapReadyCallback {
                 getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // Inflate the layout for this fragment
+        final EditText zipText = (EditText) view.findViewById(R.id.zip_text);
+        zipText.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent
+                        .KEYCODE_ENTER) {
+                    // We have to make sure this is a valid zip code - check
+                    // total count and characters
+                    String text = zipText.getText().toString();
+                    int zip = Integer.parseInt(text);
+
+                    InputMethodManager imm = (InputMethodManager) getActivity()
+                            .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(zipText.getWindowToken(), 0);
+
+                    updateMapForZip(zip);
+                    return true;
+                }
+                return false;
+            }
+        });
+
         return view;
     }
 
@@ -82,6 +112,16 @@ public class MainFragment extends Fragment implements OnMapReadyCallback {
             Log.v("---MAPS---", "Lat: " + latLng.latitude + " - Long: " +
                     latLng.longitude);
         }
+        try {
+            Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+            List<Address> addresses = geocoder.getFromLocation(latLng.latitude,
+                    latLng.longitude, 1);
+            int zip = Integer.parseInt(addresses.get(0).getPostalCode());
+            updateMapForZip(zip);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         updateMapForZip(92284);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
     }
